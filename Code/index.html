@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+precision mediump float;
+
+attribute  vec4 vPosition;
+attribute vec4 vNormal;
+
+varying vec4 fColor;
+
+uniform mat4 transformationMatrix;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform vec4 lightPosition;
+uniform float shininess;
+
+uniform vec4 ambientProductLoc,diffuseProductLoc, specularProductLoc;
+
+void main()
+{
+		vec3 pos = (modelViewMatrix * transformationMatrix * vPosition).xyz;
+        vec3 L = normalize((modelViewMatrix * lightPosition).xyz - pos);
+        vec3 E= normalize(-pos);
+        vec3 H = normalize( L + E );
+        vec3 N = normalize(mat3(modelViewMatrix) * mat3(transformationMatrix) * vNormal.xyz);
+
+        vec4 ambient=ambientProductLoc;
+
+        float Kd = max( dot(L, N), 0.0 );
+        vec4  diffuse = Kd * diffuseProductLoc;
+        
+        float Ks = pow( max(dot(N, H), 0.0), shininess );
+        vec4  specular = Ks * specularProductLoc;
+        
+        if( dot(L, N) < 0.0 ) 
+            specular = vec4(0.0, 0.0, 0.0, 1.0);
+        
+        gl_Position = projectionMatrix * modelViewMatrix  * transformationMatrix * vPosition;
+        
+        fColor = ambient + diffuse + specular;
+        fColor.a = 1.0;
+}
+
+
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+precision mediump float;
+
+varying vec4 fColor;
+
+void main()
+{
+	gl_FragColor=fColor;
+}
+
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="project.js"></script>
+
+<body>
+<canvas id="gl-canvas" width="1000"" height="640">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+
+
+
+
+</body>
+</html>
